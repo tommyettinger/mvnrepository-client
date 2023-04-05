@@ -17,7 +17,6 @@ package devcsrj.mvnrepository
 
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
-import org.bouncycastle.crypto.tls.ConnectionEnd.server
 import org.testng.annotations.AfterClass
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test

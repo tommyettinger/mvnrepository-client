@@ -183,7 +183,6 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
-                                <source>src/integration-test/kotlin</source>
                                 <source>src/test/kotlin</source>
                             </sourceDirs>
                         </configuration>
