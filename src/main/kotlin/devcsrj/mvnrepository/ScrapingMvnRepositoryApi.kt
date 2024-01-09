@@ -22,11 +22,12 @@ import org.slf4j.LoggerFactory
 import pl.droidsonroids.retrofit2.JspoonConverterFactory
 import retrofit2.Retrofit
 import java.time.ZoneId
-import java.util.Optional
+import java.util.*
 
 internal class ScrapingMvnRepositoryApi(
     private val baseUrl: HttpUrl,
-    private val okHttpClient: OkHttpClient) : MvnRepositoryApi {
+    private val okHttpClient: OkHttpClient
+) : MvnRepositoryApi {
 
     companion object {
 
@@ -36,7 +37,7 @@ internal class ScrapingMvnRepositoryApi(
 
     private val logger: Logger = LoggerFactory.getLogger(MvnRepositoryApi::class.java)
     private val pageApi: MvnRepositoryPageApi
-    
+
     init {
         val retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
@@ -48,31 +49,28 @@ internal class ScrapingMvnRepositoryApi(
     }
 
     override fun getRepositories(): List<Repository> {
-        var p = 1
-        val repos = mutableListOf<Repository>()
-        while (true) { // there are only 2(?) pages, we'll query them all at once now
-            val response = pageApi.getRepositoriesPage(p).execute()
-            p++ // next page
-            if (!response.isSuccessful) {
-                logger.warn("Request to $baseUrl failed while fetching repositories, got: ${response.code()}")
-                break
-            }
-            val page = response.body() ?: break;
-            if (page.entries.isEmpty())
-                break // stop when the page no longer shows an entry (we exceeded max page)
-
-            repos.addAll(page.entries
-                .filter { it.isPopulated() }
-                .map { Repository(it.id!!, it.name!!, it.uri!!) })
+        val response = pageApi.getRepositoriesPage().execute()
+        if (!response.isSuccessful) {
+            logger.warn("Request to $baseUrl failed while fetching repositories, got: ${response.code()}")
+            return emptyList()
         }
-        return repos.toList()
+        val page = response.body();
+        return if (page !== null) {
+            page.entries
+                .filter { it.isPopulated() }
+                .map { Repository(it.id!!, it.name!!, it.uri!!) }
+        } else {
+            emptyList()
+        }
     }
 
     override fun getArtifactVersions(groupId: String, artifactId: String): List<String> {
         val response = pageApi.getArtifactVersionsPage(groupId, artifactId).execute()
         if (!response.isSuccessful) {
-            logger.warn("Request to $baseUrl failed while fetching versions for artifact '" +
-                "$groupId:$artifactId', got: ${response.code()}")
+            logger.warn(
+                "Request to $baseUrl failed while fetching versions for artifact '" +
+                    "$groupId:$artifactId', got: ${response.code()}"
+            )
             return emptyList()
         }
 
@@ -83,13 +81,24 @@ internal class ScrapingMvnRepositoryApi(
     override fun getArtifact(groupId: String, artifactId: String, version: String): Optional<Artifact> {
         val response = pageApi.getArtifactPage(groupId, artifactId, version).execute()
         if (!response.isSuccessful) {
-            logger.warn("Request to $baseUrl failed while fetching artifact '" +
-                "$groupId:$artifactId:$version', got: ${response.code()}")
+            logger.warn(
+                "Request to $baseUrl failed while fetching artifact '" +
+                    "$groupId:$artifactId:$version', got: ${response.code()}"
+            )
             return Optional.empty()
         }
         val body = response.body() ?: return Optional.empty()
         val localDate = body.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        val artifact = Artifact(groupId, artifactId, version, body.license, body.homepage, localDate, body.snippets)
+        val artifact = Artifact(
+            groupId = groupId,
+            id = artifactId,
+            version = version,
+            license = body.license,
+            homepage =  body.homepage,
+            date =  localDate,
+            usedBy = body.usedBy,
+            snippets = body.snippets
+        )
 
         return Optional.of(artifact)
     }
