@@ -16,6 +16,7 @@
 package devcsrj.mvnrepository
 
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import java.util.Optional
 
@@ -54,8 +55,10 @@ interface MvnRepositoryApi {
          * Constructs a [MvnRepositoryApi] that fetches data from [https://mvnrepository.com/]
          * with a default http client.
          */
-        fun create(url: HttpUrl = HttpUrl.parse("https://mvnrepository.com/")!!,
-                   okHttpClient: OkHttpClient = OkHttpClient()): MvnRepositoryApi {
+        fun create(
+            url: HttpUrl = "https://mvnrepository.com/".toHttpUrlOrNull()!!,
+            okHttpClient: OkHttpClient = OkHttpClient()
+        ): MvnRepositoryApi {
             return ScrapingMvnRepositoryApi(url, okHttpClient)
         }
     }
