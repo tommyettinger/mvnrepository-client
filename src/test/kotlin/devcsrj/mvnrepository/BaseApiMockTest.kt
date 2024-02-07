@@ -19,6 +19,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okio.Buffer
 import okio.Okio
+import okio.source
 
 abstract class BaseApiMockTest {
 
@@ -32,7 +33,7 @@ abstract class BaseApiMockTest {
         paths.forEach {
             val buffer = Buffer()
             javaClass.getResourceAsStream(it).use {
-                buffer.writeAll(Okio.source(it))
+                buffer.writeAll(it.source())
             }
             server.enqueue(MockResponse().setBody(buffer))
         }
