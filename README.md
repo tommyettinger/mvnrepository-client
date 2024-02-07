@@ -9,20 +9,20 @@ This project provides a client for accessing data from [mvnrepository](http://mv
 
 Download
 ---
-Grab via Maven:
+Using [the JitPack repository](https://jitpack.io/#tommyettinger/mvnrepository-client/), grab via Maven:
 
 ```xml
 <dependency>
-    <groupId>com.github.devcsrj</groupId>
-    <artifactId>mvnrepository-api-client</artifactId>
+    <groupId>com.github.tommyettinger</groupId>
+    <artifactId>mvnrepository-client</artifactId>
     <version>${mvnrepo.version}</version>
 </dependency>
 ```
 
-or Gradle:
+or again using [the JitPack repository](https://jitpack.io/#tommyettinger/mvnrepository-client/), Gradle:
 
 ```groovy
-compile 'com.github.devcsrj:mvnrepository-api-client:${mvnrepo.version}'
+implementation "com.github.tommyettinger:mvnrepository-client:${mvnrepo.version}"
 ```
 
 
